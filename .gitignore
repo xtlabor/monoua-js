@@ -1,0 +1,8 @@
+# IntelliJ project files
+.idea
+out
+gen
+
+node_modules
+
+/api.config.js

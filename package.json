@@ -1,0 +1,12 @@
+{
+  "name": "monoua-js",
+  "version": "1.0.0",
+  "dependencies": {
+    "bitbar": "1.0.0",
+    "lodash": "4.17.11",
+    "moment": "2.24.0"
+  },
+  "engines": {
+    "node": "10.15.1"
+  }
+}

@@ -1,5 +1,5 @@
-const https = require('https');
 const _ = require('lodash');
+const request = require('sync-request');
 
 const Config = require('./api.config');
 const CurrencyInfo = require('./models/currencyInfo');
@@ -23,57 +23,55 @@ const apiEndpoints = {
     },
 };
 
-API.getCurrency = async () => {
-    const currencyRates = await _request();
-    if (!_.isEmpty(currencyRates)) {
-        return _.map(currencyRates, (currencyRate) => new CurrencyInfo(currencyRate));
+API.getCurrency = () => {
+    const data = _request('GET', 'bank', 'currency');
+    if (data !== false && !_.isEmpty(data)) {
+        return _.map(data, (d) => new CurrencyInfo(d));
     }
     return [];
 };
 
-API.getClientInfo = async () => {
-    const clientInfo = await _request('GET', 'personal', 'clientInfo');
-    if (!_.isEmpty(clientInfo)) {
-        return new ClientInfo(clientInfo);
+API.getClientInfo = () => {
+    const data = _request('GET', 'personal', 'clientInfo');
+    if (data !== false && !_.isEmpty(data)) {
+        return new ClientInfo(data);
     }
     return [];
 };
 
 function _request(method = 'GET', scope = 'bank', path = 'currency', params = '') {
-    return new Promise((resolve, reject) => {
-        let headers = {};
-        let pathOption = `/${apiEndpoints[scope].scope}/${apiEndpoints[scope].path[path]}`;
-        pathOption += params.length ? `/${params.toString()}` : '';
-        const options = {
-            hostname: Config.apiHost,
-            path: pathOption,
-            method: method,
-        };
-        if (apiEndpoints[scope].token === true) {
-            headers['X-Token'] = Config.apiToken;
-        }
-        if (!_.isEmpty(headers)) {
-            options.headers = headers;
-        }
+    const headers = {};
+    const options = {};
+    let pathOption = `/${apiEndpoints[scope].scope}/${apiEndpoints[scope].path[path]}`;
+    pathOption += params.length ? `/${params.toString()}` : '';
+    const url = `${Config.apiHost}${pathOption}`;
 
-        const req = https.request(options, (res) => {
-            let body = '';
+    if (apiEndpoints[scope].token === true) {
+        headers['X-Token'] = Config.apiToken;
+    }
+    if (!_.isEmpty(headers)) {
+        options.headers = headers;
+    }
 
-            res.on('data', (d) => {
-                body += d;
-            });
+    const res = request(method, url, options);
 
-            res.on('end', () => {
-                resolve(JSON.parse(body));
-            });
-        });
+    return _getBody(res);
+}
 
-        req.on('error', (error) => {
-            reject(error);
-        });
+function _getBody(res) {
+    let result = {};
+    try {
+        result = JSON.parse(res.getBody('utf8'));
+    } catch (e) {
+        return _errorHandler(res);
+    }
 
-        req.end();
-    });
+    return result;
+}
+
+function _errorHandler() {
+    // TODO
+    return false;
 }
 
 module.exports = API;

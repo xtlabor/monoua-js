@@ -1,4 +1,4 @@
 module.exports = {
-    apiHost: 'api.monobank.ua',
+    apiHost: 'https://api.monobank.ua',
     apiToken: '',
 };

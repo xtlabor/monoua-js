@@ -11,11 +11,11 @@
 */
 
 const _ = require('lodash');
-const bitBar = require('bitbar');
+const Bar = require('bitbar');
 const API = require('./api');
 
-const bitBarData = [];
-const bitBarOptions = {};
+const barData = [];
+const barOptions = {};
 let _Client = {};
 
 const titleIcon = 'iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAADJ0lEQVR4AWKgKRgF3t7eJgkJCfZEKS4rKzP08PDIT01NtSZGfX' +
@@ -29,12 +29,44 @@ const titleIcon = 'iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAADJ0lEQVR4AWKgK
     'F+jsfjVUH0VIkbGxoayLiLPEtLS+fKqHhVGo1239PTMxcH9Yye6+3t1USmt4esLfEFYWMh2Jna2lqSpPmcnJx5RUVF1PHja9euVUVGx9CUWWxDYn' +
     'vCIXcgWGloWKiivPXQKQg63YEBHH/7rm9paZmL+yYL3r5GIpEOwjH9CxcuTIOzklB4sSjKNPi/E465jGBWg1b1v36wgBLlmJgYLzTTwH82LsAcQR' +
     'uG8N25c6fC/0fvP71+AVDd+A96CWoiAAAAAElFTkSuQmCC';
+const warningIcon = '⚠️';
 
-(async () => renderPlugin())();
+renderPlugin();
 
-async function getData() {
-    const currencyInfo = await API.getCurrency();
-    _Client = await API.getClientInfo();
+function renderPlugin() {
+    const data = getData();
+
+    const header = {text: '', image: titleIcon};
+    const menu = [];
+    const refresh = {text: 'Обновить', refresh: true};
+
+    if (data === false) {
+        header.text = `${warningIcon} Ошибка`;
+        header.color = 'red';
+    } else {
+        if (!_.isEmpty(data.client)) {
+            menu.push(...data.client);
+            menu.push(Bar.separator);
+        }
+        if (!_.isEmpty(data.currency)) {
+            menu.push(...data.currency);
+            menu.push(Bar.separator);
+        }
+    }
+
+    barData.push(header);
+    barData.push(Bar.separator);
+    barData.push(...menu);
+    barData.push(refresh);
+
+    barOptions.color = Bar.darkMode ? 'white' : 'red';
+
+    Bar(barData, barOptions);
+}
+
+function getData() {
+    const currencyInfo = API.getCurrency();
+    _Client = API.getClientInfo();
 
     return {
         currencyInfo,
@@ -58,11 +90,11 @@ function _getClient(clientData) {
     });
 
     Menu.push({text: clientData.name});
-    Menu.push(bitBar.separator);
+    Menu.push(Bar.separator);
 
     Menu.push(..._getAccountMenu(clientData.defaultAccount, fontSizeLabel, fontSizeValue));
 
-    Menu.push(bitBar.separator);
+    Menu.push(Bar.separator);
     Menu.push({text: `Кошельки`, submenu: accountsMenu});
 
     return Menu;
@@ -73,13 +105,13 @@ function _getAccountMenu(data, fontSizeLabel = 12, fontSizeValue = 10) {
 
     menu.push({text: `Баланс:`, size: fontSizeLabel});
     menu.push({text: data.getBalanceDisplay(), size: fontSizeValue});
-    menu.push(bitBar.separator);
+    menu.push(Bar.separator);
     menu.push({text: `Личные средства:`, size: fontSizeLabel});
     menu.push({text: data.getOwnBalanceDisplay(), size: fontSizeValue});
-    menu.push(bitBar.separator);
+    menu.push(Bar.separator);
     menu.push({text: `Кредитный лимит:`, size: fontSizeLabel});
     menu.push({text: data.getCreditLimitDisplay(), size: fontSizeValue});
-    menu.push(bitBar.separator);
+    menu.push(Bar.separator);
     menu.push({text: `Использовано кредита:`, size: fontSizeLabel});
     menu.push({text: data.getUsedCreditDisplay(), size: fontSizeValue});
 
@@ -112,17 +144,17 @@ function _getCurrencySubMenu(currencyInfos) {
             });
         }
         if (!_.isNil(currencyInfo.rateSell)) {
-            currencyMenu.submenu.push(bitBar.separator);
+            currencyMenu.submenu.push(Bar.separator);
             currencyMenu.submenu.push({text: `Продажа:`, size: fontSizeLabel});
             currencyMenu.submenu.push({text: currencyInfo.getRate(currencyInfo.rateSell), size: fontSizeValue});
         }
         if (!_.isNil(currencyInfo.rateBuy)) {
-            currencyMenu.submenu.push(bitBar.separator);
+            currencyMenu.submenu.push(Bar.separator);
             currencyMenu.submenu.push({text: `Покупка:`, size: fontSizeLabel});
             currencyMenu.submenu.push({text: currencyInfo.getRate(currencyInfo.rateBuy), size: fontSizeValue});
         }
         if (!_.isNil(currencyInfo.rateCross)) {
-            currencyMenu.submenu.push(bitBar.separator);
+            currencyMenu.submenu.push(Bar.separator);
             currencyMenu.submenu.push({text: `Кросс-курс:`, size: fontSizeLabel});
             currencyMenu.submenu.push({text: currencyInfo.getRate(currencyInfo.rateCross), size: fontSizeValue});
         }
@@ -131,28 +163,3 @@ function _getCurrencySubMenu(currencyInfos) {
 
     return menu;
 }
-
-async function renderPlugin() {
-    const data = await getData();
-
-    const header = {text: '', image: titleIcon};
-    const menu = [];
-    const refresh = {text: 'Refresh', refresh: true};
-
-    menu.push(...data.client);
-
-    menu.push(bitBar.separator);
-    menu.push(...data.currency);
-
-    menu.push(bitBar.separator);
-    menu.push(refresh);
-
-    bitBarData.push(header);
-    bitBarData.push(bitBar.separator);
-    bitBarData.push(...menu);
-
-    bitBarOptions.color = bitBar.darkMode ? 'white' : 'red';
-
-    bitBar(bitBarData, bitBarOptions);
-}
-

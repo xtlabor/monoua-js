@@ -1,12 +1,23 @@
 {
   "name": "monoua-js",
   "version": "1.0.0",
+  "description": "Monobank UA plugin for BitBar",
+  "author": {
+    "name": "Mykola Plashenko",
+    "email": "xtlabor@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xtlabor/monoua-js.git"
+  },
   "dependencies": {
-    "bitbar": "1.0.0",
-    "lodash": "4.17.11",
-    "moment": "2.24.0"
+    "bitbar": "^1.0.0",
+    "lodash": "^4.17.11",
+    "moment": "^2.24.0",
+    "sync-request": "^6.1.0"
   },
   "engines": {
     "node": "10.15.1"
-  }
+  },
+  "license": "MIT"
 }

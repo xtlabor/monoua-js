@@ -12,28 +12,34 @@ function Account(obj) {
     this.currency = !_.isNil(this.currencyCode) ? new Currency(obj.currencyCode) : null;
     this.cashbackType = obj.cashbackType;
     this.defaultAccount = this.currencyCode === Currency.defaultCurrencyCode || false;
+    this.usedCreditBalance = getUsedCredit(this.balance, this.creditLimit);
+    this.ownBalance = getOwnBalance(this.balance, this.creditLimit);
 }
 
 Account.prototype.getBalanceDisplay = function() {
-    let balance = this.balance;
-    return this.currency.getValueDisplay(balance);
+    return this.currency.getValueDisplay(this.balance);
 };
 
 Account.prototype.getCreditLimitDisplay = function() {
-    let balance = this.creditLimit;
-    return this.currency.getValueDisplay(balance);
+    return this.currency.getValueDisplay(this.creditLimit);
 };
 
 Account.prototype.getUsedCreditDisplay = function() {
-    let balance = this.balance - this.creditLimit;
-    balance = balance < 0 ? Math.abs(balance) : 0;
-    return this.currency.getValueDisplay(balance);
+    return this.currency.getValueDisplay(this.usedCreditBalance);
 };
 
 Account.prototype.getOwnBalanceDisplay = function() {
-    let balance = this.balance - this.creditLimit;
-    balance = balance > 0 ? balance : 0;
-    return this.currency.getValueDisplay(balance);
+    return this.currency.getValueDisplay(this.ownBalance);
 };
+
+function getUsedCredit(balance, creditLimit) {
+    let value = balance - creditLimit;
+    return value < 0 ? Math.abs(value) : 0;
+}
+
+function getOwnBalance(balance, creditLimit) {
+    let value = balance - creditLimit;
+    return value > 0 ? value : 0;
+}
 
 module.exports = Account;

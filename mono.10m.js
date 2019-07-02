@@ -121,7 +121,7 @@ function _getAccountMenu(data, fontSizeLabel = 12, fontSizeValue = 10) {
 function _getCurrency(currencyInfos) {
     const currency = [];
     currency.push({
-        text: 'Currency',
+        text: 'Курс валют',
         submenu: _getCurrencySubMenu(currencyInfos),
     });
 

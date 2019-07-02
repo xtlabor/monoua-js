@@ -18,12 +18,15 @@ const apiEndpoints = {
         scope: 'personal',
         path: {
             clientInfo: 'client-info',
+            statement: 'statement',
         },
         token: true,
     },
 };
 
-API.getCurrency = () => {
+API.timeLimit = 60;
+
+API.getCurrency = function () {
     const data = _request('GET', 'bank', 'currency');
     if (data !== false && !_.isEmpty(data)) {
         return _.map(data, (d) => new CurrencyInfo(d));
@@ -31,10 +34,19 @@ API.getCurrency = () => {
     return [];
 };
 
-API.getClientInfo = () => {
+API.getClientInfo = function () {
     const data = _request('GET', 'personal', 'clientInfo');
     if (data !== false && !_.isEmpty(data)) {
         return new ClientInfo(data);
+    }
+    return [];
+};
+
+API.getStatementRaw = function (from, to, account = '0') {
+    let params = `${account}${from ? '/' + from : ''}${to ? '/' + to : ''}`;
+    const data = _request('GET', 'personal', 'statement', params);
+    if (data !== false && !_.isEmpty(data)) {
+        return data;
     }
     return [];
 };
@@ -61,16 +73,23 @@ function _request(method = 'GET', scope = 'bank', path = 'currency', params = ''
 function _getBody(res) {
     let result = {};
     try {
-        result = JSON.parse(res.getBody('utf8'));
+        result = res.getBody('utf8');
     } catch (e) {
-        return _errorHandler(res);
+        return _errorHandler(e);
     }
 
-    return result;
+    return !_.isEmpty(result) ? JSON.parse(result) : {};
 }
 
-function _errorHandler() {
-    // TODO
+function _errorHandler(res) {
+    let error = res.body.toString('utf8');
+    if (error.length) {
+        error = JSON.parse(error);
+        if (!_.isEmpty(error) && error.errorDescription) {
+            console.log(res.statusCode, error.errorDescription);
+        }
+    }
+
     return false;
 }
 
